@@ -1,0 +1,156 @@
+@model Contract
+@{
+    ViewData["Title"] = "Chi tiết hợp đồng: " + Model.MaHopDong;
+    var tongNo = Model.SupplyDebts.Sum(sd => sd.ThanhTien);
+    var tongThuMua = Model.Harvests.Sum(h => h.ThanhTien);
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5><i class="bi bi-file-earmark-text-fill text-success me-2"></i>@Model.MaHopDong</h5>
+        <div class="d-flex gap-2 flex-wrap">
+            @if (Model.TrangThai == TrangThaiHopDong.DangThucHien)
+            {
+                <a href="@Url.Action("Settlement","Harvests",new{contractId=Model.Id})" class="btn-primary-custom" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="bi bi-calculator"></i> Quyết toán</a>
+                <a href="@Url.Action("Create","SupplyDebts",new{contractId=Model.Id})" class="btn-outline-custom"><i class="bi bi-plus"></i> Ghi nợ VT</a>
+                <a href="@Url.Action("Create","Harvests",new{contractId=Model.Id})" class="btn-outline-custom"><i class="bi bi-plus"></i> Thu mua</a>
+            }
+            <a href="@Url.Action("Edit",new{id=Model.Id})" class="btn-outline-custom"><i class="bi bi-pencil"></i> Sửa</a>
+            <a href="@Url.Action("Index")" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Quay lại</a>
+        </div>
+    </div>
+
+    <!-- Contract Info -->
+    <div class="card-custom mb-4">
+        <div class="card-header-custom">
+            <h6>Thông tin hợp đồng</h6>
+            <div>
+                @if(Model.TrangThai == TrangThaiHopDong.DangThucHien){<span class="badge-status active"><i class="bi bi-circle-fill" style="font-size:7px"></i> Đang thực hiện</span>}
+                else if(Model.TrangThai == TrangThaiHopDong.DaQuyetToan){<span class="badge-status settled"><i class="bi bi-check-circle-fill" style="font-size:10px"></i> Đã quyết toán</span>}
+                else{<span class="badge-status cancelled"><i class="bi bi-x-circle" style="font-size:10px"></i> Đã hủy</span>}
+            </div>
+        </div>
+        <div class="card-body-custom">
+            <div class="info-grid">
+                <div class="info-item"><div class="info-label">Mã hợp đồng</div><div class="info-value">@Model.MaHopDong</div></div>
+                <div class="info-item"><div class="info-label">Nông dân</div><div class="info-value"><a href="@Url.Action("Details","Farmers",new{id=Model.FarmerId})" class="text-decoration-none" style="color:var(--primary)">@Model.Farmer?.HoTen</a></div></div>
+                <div class="info-item"><div class="info-label">Vùng</div><div class="info-value">@Model.Farmer?.Zone?.TenThonXa</div></div>
+                <div class="info-item"><div class="info-label">Mùa vụ</div><div class="info-value">@Model.MuaVu</div></div>
+                <div class="info-item"><div class="info-label">Sản phẩm thu mua</div><div class="info-value">@(Model.SanPhamThuMua ?? "—")</div></div>
+                <div class="info-item"><div class="info-label">Giá thu mua</div><div class="info-value money">@Model.GiaThuMua.ToString("N0") đ/kg</div></div>
+                <div class="info-item"><div class="info-label">Thời hạn</div><div class="info-value">@Model.NgayBatDau.ToString("dd/MM/yyyy") → @Model.NgayKetThuc.ToString("dd/MM/yyyy")</div></div>
+                <div class="info-item"><div class="info-label">Lãi suất</div><div class="info-value">@(Model.LaiSuat > 0 ? $"{Model.LaiSuat}%/tháng" : "Không tính lãi")</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card red">
+                <div class="stat-icon red"><i class="bi bi-receipt-cutoff"></i></div>
+                <div class="stat-value">@tongNo.ToString("N0")</div>
+                <div class="stat-label">Tổng nợ vật tư (VNĐ)</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card green">
+                <div class="stat-icon green"><i class="bi bi-basket-fill"></i></div>
+                <div class="stat-value">@tongThuMua.ToString("N0")</div>
+                <div class="stat-label">Tổng thu mua (VNĐ)</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card blue">
+                <div class="stat-icon blue"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-value">@((tongThuMua - tongNo).ToString("N0"))</div>
+                <div class="stat-label">Chênh lệch (VNĐ)</div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Settlement != null)
+    {
+        <div class="card-custom mb-4">
+            <div class="card-header-custom" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+                <h6><i class="bi bi-check-circle-fill text-success me-2"></i>Kết quả Quyết toán</h6>
+                <small class="text-muted">Ngày: @Model.Settlement.NgayQuyetToan.ToString("dd/MM/yyyy")</small>
+            </div>
+            <div class="card-body-custom">
+                <div class="settlement-summary">
+                    <div class="settlement-row"><span class="label">Tổng tiền thu mua</span><span class="value money positive">+@Model.Settlement.TongTienThuMua.ToString("N0") đ</span></div>
+                    <div class="settlement-row"><span class="label">Tổng nợ vật tư</span><span class="value money negative">-@Model.Settlement.TongNoVatTu.ToString("N0") đ</span></div>
+                    <div class="settlement-row"><span class="label">Tiền lãi</span><span class="value money negative">-@Model.Settlement.TienLai.ToString("N0") đ</span></div>
+                    <div class="settlement-row total"><span class="label">💰 SỐ TIỀN THỰC NHẬN</span><span class="value">@Model.Settlement.SoTienThucNhan.ToString("N0") đ</span></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Supply Debts -->
+    <div class="card-custom mb-4">
+        <div class="card-header-custom">
+            <h6><i class="bi bi-receipt-cutoff me-2 text-danger"></i>Công nợ vật tư (@Model.SupplyDebts.Count)</h6>
+            @if(Model.TrangThai == TrangThaiHopDong.DangThucHien)
+            {
+                <a href="@Url.Action("Create","SupplyDebts",new{contractId=Model.Id})" class="btn-outline-custom btn-sm"><i class="bi bi-plus"></i> Ghi nợ</a>
+            }
+        </div>
+        <div class="card-body-custom p-0">
+            @if (Model.SupplyDebts.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>Ngày</th><th>Vật tư</th><th class="text-end">Số lượng</th><th class="text-end">Đơn giá</th><th class="text-end">Thành tiền</th><th>Ghi chú</th></tr></thead>
+                    <tbody>
+                    @foreach (var sd in Model.SupplyDebts.OrderBy(x => x.NgayLay))
+                    {
+                        <tr>
+                            <td>@sd.NgayLay.ToString("dd/MM/yyyy")</td>
+                            <td class="fw-bold">@sd.Supply?.TenVatTu</td>
+                            <td class="text-end">@sd.SoLuong.ToString("N1")</td>
+                            <td class="text-end">@sd.DonGia.ToString("N0")</td>
+                            <td class="text-end money negative">@sd.ThanhTien.ToString("N0")</td>
+                            <td class="text-muted">@sd.GhiChu</td>
+                        </tr>
+                    }
+                    <tr style="font-weight:700;background:var(--bg-body)"><td colspan="4" class="text-end">TỔNG NỢ:</td><td class="text-end money negative">@tongNo.ToString("N0") đ</td><td></td></tr>
+                    </tbody>
+                </table>
+            }
+            else { <div class="empty-state py-4"><i class="bi bi-receipt"></i><p>Chưa có công nợ</p></div> }
+        </div>
+    </div>
+
+    <!-- Harvests -->
+    <div class="card-custom">
+        <div class="card-header-custom">
+            <h6><i class="bi bi-basket-fill me-2 text-success"></i>Thu mua nông sản (@Model.Harvests.Count)</h6>
+            @if(Model.TrangThai == TrangThaiHopDong.DangThucHien)
+            {
+                <a href="@Url.Action("Create","Harvests",new{contractId=Model.Id})" class="btn-outline-custom btn-sm"><i class="bi bi-plus"></i> Thu mua</a>
+            }
+        </div>
+        <div class="card-body-custom p-0">
+            @if (Model.Harvests.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>Ngày</th><th>Nông sản</th><th>Chất lượng</th><th class="text-end">SL (kg)</th><th class="text-end">Giá (đ/kg)</th><th class="text-end">Thành tiền</th></tr></thead>
+                    <tbody>
+                    @foreach (var h in Model.Harvests.OrderBy(x => x.NgayThuMua))
+                    {
+                        <tr>
+                            <td>@h.NgayThuMua.ToString("dd/MM/yyyy")</td>
+                            <td class="fw-bold">@h.TenNongSan</td>
+                            <td><span class="badge-status active">@h.ChatLuong</span></td>
+                            <td class="text-end">@h.SoLuong.ToString("N1")</td>
+                            <td class="text-end">@h.GiaThuMua.ToString("N0")</td>
+                            <td class="text-end money positive">@h.ThanhTien.ToString("N0")</td>
+                        </tr>
+                    }
+                    <tr style="font-weight:700;background:var(--bg-body)"><td colspan="5" class="text-end">TỔNG THU MUA:</td><td class="text-end money positive">@tongThuMua.ToString("N0") đ</td></tr>
+                    </tbody>
+                </table>
+            }
+            else { <div class="empty-state py-4"><i class="bi bi-basket"></i><p>Chưa có bản ghi thu mua</p></div> }
+        </div>
+    </div>
+</div>

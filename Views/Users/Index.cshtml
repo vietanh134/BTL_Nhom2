@@ -1,0 +1,83 @@
+@model List<User>
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5><i class="bi bi-shield-lock-fill text-primary me-2"></i>Quản lý tài khoản</h5>
+        <a href="@Url.Action("Create")" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Thêm tài khoản</a>
+    </div>
+
+    <div class="card-custom">
+        <div class="card-body-custom p-0">
+            @if (Model.Any())
+            {
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên đăng nhập</th>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>SĐT</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var u in Model)
+                    {
+                        <tr>
+                            <td class="text-muted">@u.Id</td>
+                            <td class="fw-bold">@u.TenDangNhap</td>
+                            <td>@u.HoTen</td>
+                            <td><span class="text-muted">@u.Email</span></td>
+                            <td>@u.SoDienThoai</td>
+                            <td>
+                                @if(u.VaiTro == VaiTro.Admin)
+                                {
+                                    <span class="badge-status" style="background:#fee2e2;color:#dc2626"><i class="bi bi-shield-fill" style="font-size:10px"></i> Quản trị</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status active"><i class="bi bi-person-fill" style="font-size:10px"></i> Nhân viên</span>
+                                }
+                            </td>
+                            <td>
+                                @if(u.HoatDong)
+                                {
+                                    <span class="badge-status active"><i class="bi bi-circle-fill" style="font-size:7px"></i> Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status cancelled"><i class="bi bi-circle-fill" style="font-size:7px"></i> Đã khóa</span>
+                                }
+                            </td>
+                            <td><small class="text-muted">@u.NgayTao.ToString("dd/MM/yyyy")</small></td>
+                            <td>
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="@Url.Action("Edit", new{id=u.Id})" class="btn-sm-action" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="ToggleActive" asp-route-id="@u.Id" method="post">
+                                        <button type="submit" class="btn-sm-action @(u.HoatDong ? "danger" : "")" title="@(u.HoatDong ? "Khóa" : "Mở khóa")">
+                                            <i class="bi @(u.HoatDong ? "bi-lock" : "bi-unlock")"></i>
+                                        </button>
+                                    </form>
+                                    <form asp-action="Delete" asp-route-id="@u.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản @u.TenDangNhap?')">
+                                        <button type="submit" class="btn-sm-action danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state"><i class="bi bi-people"></i><p>Chưa có tài khoản nào</p></div>
+            }
+        </div>
+    </div>
+</div>

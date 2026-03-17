@@ -1,0 +1,64 @@
+@model List<Zone>
+@{
+    ViewData["Title"] = "Vùng nguyên liệu";
+    var stats = ViewBag.Stats as Dictionary<int, dynamic>;
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5><i class="bi bi-geo-alt-fill text-success me-2"></i>Danh sách Vùng nguyên liệu</h5>
+        <a href="@Url.Action("Create")" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Thêm vùng</a>
+    </div>
+
+    <div class="card-custom">
+        <div class="card-body-custom p-0">
+            @if (Model.Any())
+            {
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên Thôn/Xã</th>
+                            <th>Huyện/Quận</th>
+                            <th>Tỉnh/TP</th>
+                            <th class="text-center">Nông dân</th>
+                            <th class="text-center">Diện tích (ha)</th>
+                            <th class="text-center">Hợp đồng</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var z in Model)
+                    {
+                        var s = stats != null && stats.ContainsKey(z.Id) ? stats[z.Id] : null;
+                        <tr>
+                            <td class="text-muted">@z.Id</td>
+                            <td class="fw-bold"><a href="@Url.Action("Details", new{id=z.Id})" class="text-decoration-none" style="color:var(--primary)">@z.TenThonXa</a></td>
+                            <td>@z.HuyenQuan</td>
+                            <td>@z.TinhThanhPho</td>
+                            <td class="text-center fw-bold">@(s?.SoNongDan ?? 0)</td>
+                            <td class="text-center">@(s != null ? ((decimal)s.TongDienTich).ToString("N1") : "0")</td>
+                            <td class="text-center">@(s?.SoHopDong ?? 0)</td>
+                            <td>
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="@Url.Action("Edit", new{id=z.Id})" class="btn-sm-action" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@z.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa vùng này?')">
+                                        <button type="submit" class="btn-sm-action danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="bi bi-geo-alt"></i>
+                    <p>Chưa có vùng nguyên liệu nào</p>
+                    <a href="@Url.Action("Create")" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Thêm vùng mới</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

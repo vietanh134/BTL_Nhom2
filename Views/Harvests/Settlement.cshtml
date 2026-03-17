@@ -1,0 +1,114 @@
+@model Contract
+@{
+    ViewData["Title"] = "Quyết toán mùa vụ";
+    var tongThuMua = (decimal)ViewBag.TongThuMua;
+    var tongNoVatTu = (decimal)ViewBag.TongNoVatTu;
+    var tienLai = (decimal)ViewBag.TienLai;
+    var thucNhan = (decimal)ViewBag.ThucNhan;
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5><i class="bi bi-calculator text-warning me-2"></i>Quyết toán — @Model.MaHopDong</h5>
+        <a href="@Url.Action("Details","Contracts",new{id=Model.Id})" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Quay lại hợp đồng</a>
+    </div>
+
+    <!-- Contract Info -->
+    <div class="card-custom mb-4">
+        <div class="card-body-custom">
+            <div class="info-grid">
+                <div class="info-item"><div class="info-label">Nông dân</div><div class="info-value">@Model.Farmer?.HoTen</div></div>
+                <div class="info-item"><div class="info-label">Vùng</div><div class="info-value">@Model.Farmer?.Zone?.TenThonXa</div></div>
+                <div class="info-item"><div class="info-label">Mùa vụ</div><div class="info-value">@Model.MuaVu</div></div>
+                <div class="info-item"><div class="info-label">Lãi suất</div><div class="info-value">@(Model.LaiSuat > 0 ? $"{Model.LaiSuat}%/tháng" : "Không tính lãi")</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debts Summary -->
+    <div class="card-custom mb-4">
+        <div class="card-header-custom"><h6><i class="bi bi-receipt-cutoff text-danger me-2"></i>Chi tiết nợ vật tư</h6></div>
+        <div class="card-body-custom p-0">
+            @if (Model.SupplyDebts.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>Ngày</th><th>Vật tư</th><th class="text-end">SL</th><th class="text-end">Đơn giá</th><th class="text-end">Thành tiền</th></tr></thead>
+                    <tbody>
+                    @foreach (var sd in Model.SupplyDebts.OrderBy(x => x.NgayLay))
+                    {
+                        <tr><td>@sd.NgayLay.ToString("dd/MM/yyyy")</td><td>@sd.Supply?.TenVatTu</td><td class="text-end">@sd.SoLuong.ToString("N1")</td><td class="text-end">@sd.DonGia.ToString("N0")</td><td class="text-end money negative">@sd.ThanhTien.ToString("N0")</td></tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <div class="p-3 text-muted">Không có nợ vật tư</div> }
+        </div>
+    </div>
+
+    <!-- Harvest Summary -->
+    <div class="card-custom mb-4">
+        <div class="card-header-custom"><h6><i class="bi bi-basket-fill text-success me-2"></i>Chi tiết thu mua</h6></div>
+        <div class="card-body-custom p-0">
+            @if (Model.Harvests.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>Ngày</th><th>Nông sản</th><th>Chất lượng</th><th class="text-end">SL (kg)</th><th class="text-end">Giá</th><th class="text-end">Thành tiền</th></tr></thead>
+                    <tbody>
+                    @foreach (var h in Model.Harvests.OrderBy(x => x.NgayThuMua))
+                    {
+                        <tr><td>@h.NgayThuMua.ToString("dd/MM/yyyy")</td><td>@h.TenNongSan</td><td>@h.ChatLuong</td><td class="text-end">@h.SoLuong.ToString("N1")</td><td class="text-end">@h.GiaThuMua.ToString("N0")</td><td class="text-end money positive">@h.ThanhTien.ToString("N0")</td></tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <div class="p-3 text-muted">Chưa có bản ghi thu mua</div> }
+        </div>
+    </div>
+
+    <!-- Settlement Calculation -->
+    <div class="card-custom mb-4">
+        <div class="card-header-custom" style="background:linear-gradient(135deg,#fffbeb,#fef3c7)">
+            <h6><i class="bi bi-calculator me-2"></i>Bảng tính Quyết toán</h6>
+        </div>
+        <div class="card-body-custom">
+            <div class="settlement-summary">
+                <div class="settlement-row">
+                    <span class="label"><i class="bi bi-plus-circle text-success me-2"></i>Tổng tiền thu mua</span>
+                    <span class="value money positive">+@tongThuMua.ToString("N0") đ</span>
+                </div>
+                <div class="settlement-row">
+                    <span class="label"><i class="bi bi-dash-circle text-danger me-2"></i>Tổng nợ vật tư</span>
+                    <span class="value money negative">−@tongNoVatTu.ToString("N0") đ</span>
+                </div>
+                @if (tienLai > 0)
+                {
+                    <div class="settlement-row">
+                        <span class="label"><i class="bi bi-percent text-warning me-2"></i>Tiền lãi (@Model.LaiSuat%/tháng)</span>
+                        <span class="value money negative">−@tienLai.ToString("N0") đ</span>
+                    </div>
+                }
+                <div class="settlement-row total">
+                    <span class="label">💰 SỐ TIỀN THỰC NHẬN</span>
+                    <span class="value" style="color:@(thucNhan >= 0 ? "var(--primary-dark)" : "#ef4444")">@thucNhan.ToString("N0") đ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Settlement != null)
+    {
+        <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Hợp đồng này đã được quyết toán ngày @Model.Settlement.NgayQuyetToan.ToString("dd/MM/yyyy")</div>
+    }
+    else
+    {
+        <form asp-action="ConfirmSettlement" asp-controller="Harvests" method="post" class="form-custom">
+            <input type="hidden" name="contractId" value="@Model.Id" />
+            <div class="mb-3" style="max-width:600px">
+                <label class="form-label">Ghi chú quyết toán</label>
+                <textarea name="ghiChu" class="form-control" rows="2" placeholder="Ghi chú thêm nếu cần..."></textarea>
+            </div>
+            <button type="submit" class="btn-primary-custom" style="background:linear-gradient(135deg,#f59e0b,#d97706);font-size:16px;padding:14px 32px" onclick="return confirm('Bạn có chắc chắn muốn quyết toán hợp đồng @Model.MaHopDong?\n\nSố tiền thực nhận: @thucNhan.ToString("N0") VNĐ\n\nSau khi quyết toán, hợp đồng sẽ chuyển trạng thái Đã quyết toán.')">
+                <i class="bi bi-check-circle-fill"></i> XÁC NHẬN QUYẾT TOÁN
+            </button>
+        </form>
+    }
+</div>

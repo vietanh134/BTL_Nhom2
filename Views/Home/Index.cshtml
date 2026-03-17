@@ -1,0 +1,133 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Bảng điều khiển";
+}
+<div class="fade-in">
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card green">
+                <div class="stat-icon green"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-value">@Model.TongNongDan</div>
+                <div class="stat-label">Hộ nông dân</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card blue">
+                <div class="stat-icon blue"><i class="bi bi-file-earmark-text-fill"></i></div>
+                <div class="stat-value">@Model.TongHopDongDangThucHien / @Model.TongHopDong</div>
+                <div class="stat-label">Hợp đồng (đang thực hiện / tổng)</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card red">
+                <div class="stat-icon red"><i class="bi bi-receipt-cutoff"></i></div>
+                <div class="stat-value">@Model.TongNoVatTu.ToString("N0")</div>
+                <div class="stat-label">Tổng nợ vật tư (VNĐ)</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card teal">
+                <div class="stat-icon teal"><i class="bi bi-basket-fill"></i></div>
+                <div class="stat-value">@Model.TongTienThuMua.ToString("N0")</div>
+                <div class="stat-label">Tổng thu mua (VNĐ)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card amber">
+                <div class="stat-icon amber"><i class="bi bi-geo-alt-fill"></i></div>
+                <div class="stat-value">@Model.TongVung</div>
+                <div class="stat-label">Vùng nguyên liệu</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card purple">
+                <div class="stat-icon purple"><i class="bi bi-rulers"></i></div>
+                <div class="stat-value">@Model.TongDienTich.ToString("N1")</div>
+                <div class="stat-label">Tổng diện tích (ha)</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card green">
+                <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-value">@Model.TongQuyetToan</div>
+                <div class="stat-label">Đã quyết toán</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card blue">
+                <div class="stat-icon blue"><i class="bi bi-bar-chart-fill"></i></div>
+                <div class="stat-value">@((Model.TongTienThuMua - Model.TongNoVatTu).ToString("N0"))</div>
+                <div class="stat-label">Chênh lệch Thu mua - Nợ</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Recent Contracts -->
+        <div class="col-lg-7">
+            <div class="card-custom">
+                <div class="card-header-custom">
+                    <h6><i class="bi bi-clock-history me-2"></i>Hợp đồng gần đây</h6>
+                    <a href="@Url.Action("Index","Contracts")" class="btn-outline-custom btn-sm">Xem tất cả</a>
+                </div>
+                <div class="card-body-custom p-0">
+                    @if (Model.HopDongGanDay.Any())
+                    {
+                        <table class="table-custom">
+                            <thead><tr><th>Mã HĐ</th><th>Nông dân</th><th>Mùa vụ</th><th>Trạng thái</th></tr></thead>
+                            <tbody>
+                            @foreach (var c in Model.HopDongGanDay)
+                            {
+                                <tr>
+                                    <td><a href="@Url.Action("Details","Contracts",new{id=c.Id})" class="fw-bold text-decoration-none" style="color:var(--primary)">@c.MaHopDong</a></td>
+                                    <td>@c.Farmer?.HoTen</td>
+                                    <td>@c.MuaVu</td>
+                                    <td>
+                                        @if(c.TrangThai == TrangThaiHopDong.DangThucHien){<span class="badge-status active"><i class="bi bi-circle-fill" style="font-size:7px"></i> Đang thực hiện</span>}
+                                        else if(c.TrangThai == TrangThaiHopDong.DaQuyetToan){<span class="badge-status settled"><i class="bi bi-check-circle-fill" style="font-size:10px"></i> Đã quyết toán</span>}
+                                        else{<span class="badge-status cancelled"><i class="bi bi-x-circle" style="font-size:10px"></i> Đã hủy</span>}
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                    else { <div class="empty-state"><i class="bi bi-inbox"></i><p>Chưa có hợp đồng nào</p></div> }
+                </div>
+            </div>
+        </div>
+
+        <!-- Zone Statistics -->
+        <div class="col-lg-5">
+            <div class="card-custom">
+                <div class="card-header-custom">
+                    <h6><i class="bi bi-pie-chart-fill me-2"></i>Thống kê theo vùng</h6>
+                </div>
+                <div class="card-body-custom p-0">
+                    @if (Model.ThongKeVung.Any())
+                    {
+                        <table class="table-custom">
+                            <thead><tr><th>Vùng</th><th class="text-center">Nông dân</th><th class="text-center">Diện tích</th><th class="text-center">HĐ</th></tr></thead>
+                            <tbody>
+                            @foreach (var z in Model.ThongKeVung)
+                            {
+                                <tr>
+                                    <td><i class="bi bi-geo-alt text-success me-1"></i>@z.TenVung</td>
+                                    <td class="text-center fw-bold">@z.SoNongDan</td>
+                                    <td class="text-center">@z.TongDienTich.ToString("N1") ha</td>
+                                    <td class="text-center fw-bold">@z.SoHopDong</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                    else { <div class="empty-state"><i class="bi bi-geo"></i><p>Chưa có dữ liệu vùng</p></div> }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

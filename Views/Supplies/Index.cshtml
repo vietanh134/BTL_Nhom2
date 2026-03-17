@@ -1,0 +1,45 @@
+@model List<Supply>
+@{
+    ViewData["Title"] = "Vật tư";
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5><i class="bi bi-box-seam-fill text-success me-2"></i>Danh mục Vật tư</h5>
+        <a href="@Url.Action("Create")" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Thêm vật tư</a>
+    </div>
+    <div class="card-custom">
+        <div class="card-body-custom p-0">
+            @if (Model.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>#</th><th>Tên vật tư</th><th>Loại</th><th>Đơn vị</th><th class="text-end">Đơn giá (VNĐ)</th><th>Mô tả</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td class="text-muted">@s.Id</td>
+                            <td class="fw-bold">@s.TenVatTu</td>
+                            <td><span class="badge-status active">@s.LoaiVatTu</span></td>
+                            <td>@s.DonViTinh</td>
+                            <td class="text-end money">@s.DonGia.ToString("N0")</td>
+                            <td class="text-muted">@s.MoTa</td>
+                            <td>
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="@Url.Action("Edit", new{id=s.Id})" class="btn-sm-action" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@s.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa?')">
+                                        <button type="submit" class="btn-sm-action danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state"><i class="bi bi-box-seam"></i><p>Chưa có vật tư nào</p><a href="@Url.Action("Create")" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Thêm vật tư</a></div>
+            }
+        </div>
+    </div>
+</div>

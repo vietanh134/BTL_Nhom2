@@ -1,0 +1,52 @@
+@model List<SupplyDebt>
+@{
+    ViewData["Title"] = "Công nợ vật tư";
+    var contract = ViewBag.Contract as Contract;
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5>
+            <i class="bi bi-receipt-cutoff text-danger me-2"></i>Công nợ vật tư
+            @if (contract != null) { <span class="text-muted"> — @contract.MaHopDong (@contract.Farmer?.HoTen)</span> }
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Create", new{contractId=ViewBag.ContractId})" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Ghi nợ mới</a>
+            @if (contract != null) { <a href="@Url.Action("Details","Contracts",new{id=contract.Id})" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Về HĐ</a> }
+        </div>
+    </div>
+
+    <div class="card-custom">
+        <div class="card-body-custom p-0">
+            @if (Model.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>Ngày</th><th>Hợp đồng</th><th>Nông dân</th><th>Vật tư</th><th class="text-end">SL</th><th class="text-end">Đơn giá</th><th class="text-end">Thành tiền</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var sd in Model)
+                    {
+                        <tr>
+                            <td>@sd.NgayLay.ToString("dd/MM/yyyy")</td>
+                            <td><a href="@Url.Action("Details","Contracts",new{id=sd.ContractId})" class="fw-bold text-decoration-none" style="color:var(--primary)">@sd.Contract?.MaHopDong</a></td>
+                            <td>@sd.Contract?.Farmer?.HoTen</td>
+                            <td class="fw-bold">@sd.Supply?.TenVatTu</td>
+                            <td class="text-end">@sd.SoLuong.ToString("N1")</td>
+                            <td class="text-end">@sd.DonGia.ToString("N0")</td>
+                            <td class="text-end money negative">@sd.ThanhTien.ToString("N0")</td>
+                            <td>
+                                <form asp-action="Delete" asp-route-id="@sd.Id" method="post" onsubmit="return confirm('Xóa bản ghi nợ này?')">
+                                    <button type="submit" class="btn-sm-action danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    <tr style="font-weight:700;background:var(--bg-body)"><td colspan="6" class="text-end">TỔNG:</td><td class="text-end money negative">@Model.Sum(sd => sd.ThanhTien).ToString("N0") đ</td><td></td></tr>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state"><i class="bi bi-receipt"></i><p>Chưa có bản ghi công nợ nào</p></div>
+            }
+        </div>
+    </div>
+</div>

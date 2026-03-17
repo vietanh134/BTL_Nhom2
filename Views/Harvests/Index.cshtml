@@ -1,0 +1,53 @@
+@model List<Harvest>
+@{
+    ViewData["Title"] = "Thu mua nông sản";
+    var contract = ViewBag.Contract as Contract;
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5>
+            <i class="bi bi-basket-fill text-success me-2"></i>Thu mua nông sản
+            @if (contract != null) { <span class="text-muted"> — @contract.MaHopDong (@contract.Farmer?.HoTen)</span> }
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Create", new{contractId=ViewBag.ContractId})" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Ghi thu mua</a>
+            @if (contract != null) { <a href="@Url.Action("Details","Contracts",new{id=contract.Id})" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Về HĐ</a> }
+        </div>
+    </div>
+
+    <div class="card-custom">
+        <div class="card-body-custom p-0">
+            @if (Model.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>Ngày</th><th>Hợp đồng</th><th>Nông dân</th><th>Nông sản</th><th>Chất lượng</th><th class="text-end">SL (kg)</th><th class="text-end">Giá</th><th class="text-end">Thành tiền</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var h in Model)
+                    {
+                        <tr>
+                            <td>@h.NgayThuMua.ToString("dd/MM/yyyy")</td>
+                            <td><a href="@Url.Action("Details","Contracts",new{id=h.ContractId})" class="fw-bold text-decoration-none" style="color:var(--primary)">@h.Contract?.MaHopDong</a></td>
+                            <td>@h.Contract?.Farmer?.HoTen</td>
+                            <td class="fw-bold">@h.TenNongSan</td>
+                            <td><span class="badge-status active">@h.ChatLuong</span></td>
+                            <td class="text-end">@h.SoLuong.ToString("N1")</td>
+                            <td class="text-end">@h.GiaThuMua.ToString("N0")</td>
+                            <td class="text-end money positive">@h.ThanhTien.ToString("N0")</td>
+                            <td>
+                                <form asp-action="Delete" asp-route-id="@h.Id" method="post" onsubmit="return confirm('Xóa bản ghi thu mua này?')">
+                                    <button type="submit" class="btn-sm-action danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    <tr style="font-weight:700;background:var(--bg-body)"><td colspan="7" class="text-end">TỔNG:</td><td class="text-end money positive">@Model.Sum(h => h.ThanhTien).ToString("N0") đ</td><td></td></tr>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state"><i class="bi bi-basket"></i><p>Chưa có bản ghi thu mua nào</p></div>
+            }
+        </div>
+    </div>
+</div>

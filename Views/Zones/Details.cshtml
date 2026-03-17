@@ -1,0 +1,50 @@
+@model Zone
+@{
+    ViewData["Title"] = "Chi tiết vùng: " + Model.TenThonXa;
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5><i class="bi bi-geo-alt-fill text-success me-2"></i>@ViewData["Title"]</h5>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Edit", new{id=Model.Id})" class="btn-outline-custom"><i class="bi bi-pencil"></i> Sửa</a>
+            <a href="@Url.Action("Index")" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Quay lại</a>
+        </div>
+    </div>
+
+    <div class="card-custom mb-4">
+        <div class="card-body-custom">
+            <div class="info-grid">
+                <div class="info-item"><div class="info-label">Tên Thôn/Xã</div><div class="info-value">@Model.TenThonXa</div></div>
+                <div class="info-item"><div class="info-label">Huyện/Quận</div><div class="info-value">@(Model.HuyenQuan ?? "—")</div></div>
+                <div class="info-item"><div class="info-label">Tỉnh/TP</div><div class="info-value">@(Model.TinhThanhPho ?? "—")</div></div>
+                <div class="info-item"><div class="info-label">Số nông dân</div><div class="info-value">@Model.Farmers.Count</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-custom">
+        <div class="card-header-custom">
+            <h6><i class="bi bi-people-fill me-2"></i>Danh sách nông dân trong vùng</h6>
+        </div>
+        <div class="card-body-custom p-0">
+            @if (Model.Farmers.Any())
+            {
+                <table class="table-custom">
+                    <thead><tr><th>Họ tên</th><th>SĐT</th><th>Diện tích (ha)</th><th>Số HĐ</th></tr></thead>
+                    <tbody>
+                    @foreach (var f in Model.Farmers)
+                    {
+                        <tr>
+                            <td><a href="@Url.Action("Details","Farmers",new{id=f.Id})" class="fw-bold text-decoration-none" style="color:var(--primary)">@f.HoTen</a></td>
+                            <td>@f.SoDienThoai</td>
+                            <td>@f.DienTichCanhTac.ToString("N1")</td>
+                            <td>@f.Contracts.Count</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <div class="empty-state"><i class="bi bi-people"></i><p>Chưa có nông dân trong vùng này</p></div> }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,75 @@
+@model List<Farmer>
+@{
+    ViewData["Title"] = "Nông dân";
+}
+<div class="fade-in">
+    <div class="page-header">
+        <h5><i class="bi bi-people-fill text-success me-2"></i>Danh sách Nông dân</h5>
+        <a href="@Url.Action("Create")" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Thêm nông dân</a>
+    </div>
+
+    <form method="get" class="filter-bar">
+        <div class="flex-grow-1" style="min-width:200px">
+            <input type="text" name="search" class="form-control" placeholder="🔍 Tìm theo tên, SĐT..." value="@ViewBag.Search" />
+        </div>
+        <div style="min-width:180px">
+            <select name="zoneId" class="form-select">
+                <option value="">-- Tất cả vùng --</option>
+                @foreach (SelectListItem item in ViewBag.Zones)
+                {
+                    <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn-primary-custom"><i class="bi bi-search"></i> Lọc</button>
+        <a href="@Url.Action("Index")" class="btn-outline-custom">Xóa lọc</a>
+    </form>
+
+    <div class="card-custom">
+        <div class="card-body-custom p-0">
+            @if (Model.Any())
+            {
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Họ tên</th>
+                            <th>SĐT</th>
+                            <th>CCCD</th>
+                            <th>Vùng</th>
+                            <th class="text-center">Diện tích (ha)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var f in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold"><a href="@Url.Action("Details", new{id=f.Id})" class="text-decoration-none" style="color:var(--primary)">@f.HoTen</a></td>
+                            <td>@f.SoDienThoai</td>
+                            <td><span class="text-muted">@f.SoCCCD</span></td>
+                            <td><span class="badge-status active">@f.Zone?.TenThonXa</span></td>
+                            <td class="text-center fw-bold">@f.DienTichCanhTac.ToString("N1")</td>
+                            <td>
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="@Url.Action("Edit", new{id=f.Id})" class="btn-sm-action" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@f.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa?')">
+                                        <button type="submit" class="btn-sm-action danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="bi bi-people"></i>
+                    <p>Chưa có nông dân nào</p>
+                    <a href="@Url.Action("Create")" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Thêm nông dân mới</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
